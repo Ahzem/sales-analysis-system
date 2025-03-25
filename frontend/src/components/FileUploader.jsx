@@ -111,8 +111,12 @@ const FileUploader = () => {
         localStorage.removeItem('uploadHistory');
     };
 
-    const handleChatWithFile = (filename) => {
-        setCurrentCsvFile(filename);
+    const handleChatWithFile = (file) => {
+        setCurrentCsvFile({
+            name: file.name,
+            url: file.url,
+            id: file._id
+        });
         setShowChat(true);
     };
 
@@ -137,18 +141,18 @@ const FileUploader = () => {
                     
                     {isUploading ? (
                         <>
-                            <p className="upload-text">Uploading your file...</p>
+                            <p className="upload-text">Uploading your sales data...</p>
                             <ProgressBar progress={progress} />
                         </>
                     ) : isDragActive ? (
-                        <p className="upload-text">Drop your file here!</p>
+                        <p className="upload-text">Drop your sales data file here!</p>
                     ) : (
                         <>
                             <p className="upload-text">
-                                Drag & drop a file here, or click to select
+                                Drag and drop your sales data file here or click to browse
                             </p>
                             <p className="upload-hint">
-                                Supported formats: CSV
+                                Upload a CSV file containing your sales data with columns for dates, products, quantities, prices, etc.
                             </p>
                         </>
                     )}
@@ -191,7 +195,7 @@ const FileUploader = () => {
                                     <a href={file.url} target="_blank" rel="noopener noreferrer" className="view-btn">View</a>
                                     <button 
                                         className="chat-btn" 
-                                        onClick={() => handleChatWithFile(file.name)}
+                                        onClick={() => handleChatWithFile(file)}
                                     >
                                         Chat
                                     </button>

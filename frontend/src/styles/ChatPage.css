@@ -31,6 +31,9 @@
     font-size: 0.9rem;
     font-weight: 400;
     opacity: 0.8;
+    color: #a0aec0;
+    font-size: 0.8em;
+    font-weight: normal;
 }
 
 .header-info {
@@ -111,6 +114,10 @@
     border-top-left-radius: 4px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     max-width: calc(100% - 50px);
+}
+
+.message.bot .message-avatar {
+    background-color: var(--primary-color);
 }
 
 .message.user .message-content {

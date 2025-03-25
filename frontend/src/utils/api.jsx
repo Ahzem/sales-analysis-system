@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create two API instances - one for file uploads, one for AI chat
 const fileApi = axios.create({
-    baseURL: 'http://localhost:5000/api', // Node.js backend
+    baseURL: 'http://localhost:5001/api', // Node.js backend
     headers: {
         'Content-Type': 'application/json',
     },

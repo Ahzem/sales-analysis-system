@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const { uploadFile } = require('../controllers/fileController');
 const { getFileUrls } = require('../services/fileService');
+const { uploadFile, getFile } = require('../controllers/fileController');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -20,5 +20,7 @@ router.get('/urls', async (req, res) => {
 router.get('/test', (req, res) => {
     res.json({ message: 'API is working' });
 });
+
+router.get('/file', getFile);
 
 module.exports = router;

@@ -14,22 +14,22 @@ logging.basicConfig(level=logging.WARNING)
 
 # Simple chatbot for greetings and basic interactions
 basic_chat = Agent(
-    name="Cake Shop Assistant",
+    name="Sales Assistant",
     role="Handle basic greetings and non-analytical questions",
     model=OpenAIChat(model="gpt-4o"),
     instructions=[
-        "You are a friendly cake shop assistant named CakeBuddy",
+        "You are a friendly sales analysis assistant named SalesBot",
         "Keep responses short, friendly and personable",
-        "For greetings, introduce yourself as CakeBuddy, the cake shop analytics assistant",
+        "For greetings, introduce yourself as SalesBot, the sales analytics assistant",
         "For simple questions, provide brief, helpful responses",
-        "If unsure, suggest asking about cake shop sales or analytics"
+        "If unsure, suggest asking about sales metrics or analytics"
     ],
     add_history_to_messages=True,
     num_history_responses=10,
     markdown=True
 )
 
-# Data analysis agent
+# Modify the data analysis agent
 data_analyst = DuckDbAgent(
     model=OpenAIChat(model="gpt-4o"),
     semantic_model=json.dumps(
@@ -37,15 +37,15 @@ data_analyst = DuckDbAgent(
             "tables": [
                 {
                     "name": "sales_data",
-                    "description": "Contains detailed sales data for a cake shop including product names, order dates, quantities, prices, customer information, and total invoice amounts",
+                    "description": "Contains detailed sales data including product information, order dates, quantities, prices, customer information, and total invoice amounts",
                     "path": get_csv_url(),
                 }
             ]
         }
     ),
     instructions=[
-        "Analyze the cake shop's sales data comprehensively",
-        "Always calculate and provide the following exact metrics in your analysis:",
+        "Analyze sales data comprehensively",
+        "Always calculate and provide the following key metrics in your analysis:",
         "- Total Sales Revenue = Sum of all invoice totals",
         "- Total Number of Sales = Count of invoices",
         "- Average Order Value (AOV) = Total Sales Revenue / Total Number of Sales",
@@ -56,12 +56,11 @@ data_analyst = DuckDbAgent(
         "- Seasonal sales patterns with month/quarter breakdowns",
         "- Impact of discounts on revenue and purchase behavior",
         "Include visual-friendly formatting for data presentation",
-        "Always provide specific product forecasts for 2026 based on historical trends",
+        "Provide sales forecasts based on historical trends",
         "NEVER INCLUDE ANY SQL QUERIES IN YOUR RESPONSES",
         "DO NOT MENTION SQL OR QUERY SYNTAX AT ALL",
-        "NEVER say 'Here is the SQL query used' or similar phrases",
         "Provide actionable insights for improving sales and profitability",
-        "Focus on data-driven recommendations for the cake shop business",
+        "Focus on data-driven recommendations for the business",
     ],
     add_history_to_messages=True,
     num_history_responses=10,
@@ -69,16 +68,16 @@ data_analyst = DuckDbAgent(
     show_sql=False,
 )
 
-# Web search agent for bakery trends
+# Modify the web search agent
 web_agent = Agent(
     name="Web Agent",
-    role="Search the web for bakery and cake market trends",
+    role="Search the web for market trends",
     model=OpenAIChat(id="gpt-4o"),
     tools=[GoogleSearch()],
     instructions=[
         "Always include sources and dates in responses",
-        "Focus on bakery industry trends, cake market forecasts, and consumer preferences",
-        "Provide specific, actionable insights for a cake shop business"
+        "Focus on industry trends, market forecasts, and consumer preferences",
+        "Provide specific, actionable insights for business improvement"
     ],
     add_history_to_messages=True,
     num_history_responses=10,
@@ -123,14 +122,21 @@ def handle_user_input(user_input):
         return greeting_handler(user_input)
     
     # Check for analytics keywords
-    analytics_keywords = ["sales", "revenue", "product", "customer", "profit", "trend", 
-                         "analysis", "data", "performance", "forecast", "recommend"]
+    analytics_keywords = [
+        "sales", "revenue", "product", "customer", "profit", "trend", 
+        "analysis", "data", "performance", "forecast", "recommend",
+        "metrics", "growth", "inventory", "orders", "returns"
+    ]
     
     if any(keyword in user_input.lower() for keyword in analytics_keywords):
         return analysis_handler(user_input)
     
     # Check for web search keywords
-    web_keywords = ["market", "industry", "trends", "popular", "future", "consumer", "preference"]
+    web_keywords = [
+        "market", "industry", "trends", "popular", "future", 
+        "consumer", "preference", "competitor", "benchmark",
+        "forecast", "outlook", "demand"
+    ]
     
     if any(keyword in user_input.lower() for keyword in web_keywords):
         return web_search_handler(user_input)

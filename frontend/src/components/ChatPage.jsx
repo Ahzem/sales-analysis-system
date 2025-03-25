@@ -8,11 +8,11 @@ import remarkGfm from 'remark-gfm';
 import '../styles/ChatPage.css';
 import api from '../utils/api';
 
-const ChatPage = ({ onBack, csvFilename }) => {
+const ChatPage = ({ onBack, csvFile }) => {
     const [messages, setMessages] = useState([
         { 
             id: 1, 
-            text: `Hello! I'm CakeBuddy, your cake shop analytics assistant. I've analyzed your data from ${csvFilename || 'your CSV file'}. What would you like to know about your sales?`,
+            text: `Hello! I'm SalesBot, your sales analytics assistant. I've loaded your data from ${csvFile?.name || 'your CSV file'}. What would you like to know about your sales performance?`,
             sender: 'bot',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
@@ -21,11 +21,11 @@ const ChatPage = ({ onBack, csvFilename }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [suggestions] = useState([
-        "Which cake had the highest sales revenue in 2025?",
-        "Show me the monthly sales trends for all cakes",
-        "What are the top 5 best-selling cakes by quantity?",
-        "Compare sales performance between different cake categories",
-        "Which cake has the highest profit margin?"
+        "What are the top 5 products by revenue?",
+        "Show me monthly sales trends",
+        "Which products have the highest profit margins?",
+        "What's our average order value?",
+        "Show customer purchase patterns"
     ]);
     
     const messageEndRef = useRef(null);
@@ -76,7 +76,9 @@ const ChatPage = ({ onBack, csvFilename }) => {
             // Call the AI backend
             const response = await api.post('/chat', { 
                 message: userMessage.text,
-                csvFilename: csvFilename
+                csvFilename: csvFile?.name,
+                csvUrl: csvFile?.url,
+                fileId: csvFile?._id
             });
 
             // Add bot response with a small delay to feel more natural
@@ -169,9 +171,9 @@ const ChatPage = ({ onBack, csvFilename }) => {
                 <div className="header-info">
                     <div className="file-info">
                         <FaFileCsv />
-                        <span>{csvFilename || 'Sales Analysis'}</span>
+                        <span>{csvFile?.name || 'Sales Analysis'}</span>
                     </div>
-                    <h2>CakeBuddy <span className="bot-subtitle">Analytics Assistant</span></h2>
+                    <h2>SalesBot <span className="bot-subtitle">Sales Analytics Assistant</span></h2>
                 </div>
             </div>
             
@@ -248,7 +250,7 @@ const ChatPage = ({ onBack, csvFilename }) => {
             <form className="chat-input" onSubmit={handleSubmit}>
                 <input
                     type="text"
-                    placeholder="Ask about your sales data..."
+                    placeholder="Ask about revenue, products, customers, trends..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     ref={inputRef}
