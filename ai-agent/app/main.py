@@ -57,14 +57,16 @@ data_analyst = DuckDbAgent(
         "- Impact of discounts on revenue and purchase behavior",
         "Include visual-friendly formatting for data presentation",
         "Always provide specific product forecasts for 2026 based on historical trends",
-        "No need to show SQL queries in responses",
+        "NEVER INCLUDE ANY SQL QUERIES IN YOUR RESPONSES",
+        "DO NOT MENTION SQL OR QUERY SYNTAX AT ALL",
+        "NEVER say 'Here is the SQL query used' or similar phrases",
         "Provide actionable insights for improving sales and profitability",
         "Focus on data-driven recommendations for the cake shop business",
-        
     ],
     add_history_to_messages=True,
     num_history_responses=10,
     markdown=True,
+    show_sql=False,
 )
 
 # Web search agent for bakery trends

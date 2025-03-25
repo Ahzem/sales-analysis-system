@@ -15,17 +15,8 @@ const useFileUpload = () => {
         formData.append('file', file);
 
         try {
-            const response = await api.post('/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                onUploadProgress: (progressEvent) => {
-                    const percentCompleted = Math.round(
-                        (progressEvent.loaded * 100) / progressEvent.total
-                    );
-                    setProgress(percentCompleted);
-                },
-            });
+            // Use the upload method from the updated api object
+            const response = await api.upload(formData);
             return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Error uploading file');

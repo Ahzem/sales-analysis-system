@@ -83,7 +83,7 @@
 }
 
 .upload-text {
-    color: var(--text-primary);
+    color: var(--secondary-color);
     font-size: 1.2rem;
     margin: 0.5rem 0;
     max-width: 80%;
@@ -177,7 +177,7 @@
 }
 
 .history-header h3 {
-    color: var(--text-primary);
+    color: var(--text-secondary);
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0;
@@ -270,6 +270,30 @@
 .delete-btn:hover {
     color: var(--error-color);
     background: none;
+}
+
+.chat-btn {
+    background-color: var(--primary-dark);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chat-btn:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.history-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {

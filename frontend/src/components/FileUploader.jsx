@@ -16,24 +16,22 @@ import {
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import Toast from '../components/Toast';
 import ProgressBar from '../components/ProgressBar';
+import ChatPage from '../components/ChatPage';
 import '../styles/FileUploader.css';
 
 const FileUploader = () => {
     const { uploadFile, isUploading, error, progress } = useFileUpload();
     const [selectedFile, setSelectedFile] = useState(null);
     const [toast, setToast] = useState({ visible: false, message: '', url: '', type: 'success' });
-    // const [recentFiles, setRecentFiles] = useState([]);
     const [uploadHistory, setUploadHistory] = useState(() => {
         const saved = localStorage.getItem('uploadHistory');
         return saved ? JSON.parse(saved) : [];
     });
+    const [showChat, setShowChat] = useState(false);
+    const [currentCsvFile, setCurrentCsvFile] = useState(null);
 
     const getFileIcon = (filename) => {
         const extension = filename.split('.').pop().toLowerCase();
-        // if (['pdf'].includes(extension)) return <FaFilePdf />;
-        // if (['xlsx', 'xls'].includes(extension)) return <FaFileExcel />;
-        // if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) return <FaFileImage />;
-        // if (['doc', 'docx'].includes(extension)) return <FaFileWord />;
         if (['csv'].includes(extension)) return <FaFileCsv />;
         return <FaFileAlt />;
     };
@@ -64,6 +62,14 @@ const FileUploader = () => {
                     type: 'success'
                 });
                 
+                // Set the current CSV file for the chat page
+                setCurrentCsvFile(file.name);
+                
+                // Navigate to chat after a short delay
+                setTimeout(() => {
+                    setShowChat(true);
+                }, 1500);
+                
                 setSelectedFile(null);
             } catch (err) {
                 console.error(err);
@@ -89,13 +95,7 @@ const FileUploader = () => {
         onDrop,
         multiple: false,
         accept: {
-            // 'application/pdf': ['.pdf'],
-            // 'application/vnd.ms-excel': ['.xls'],
-            // 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-            'text/csv': ['.csv'],
-            // 'image/*': ['.jpg', '.jpeg', '.png', '.gif'],
-            // 'application/msword': ['.doc'],
-            // 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+            'text/csv': ['.csv']
         }
     });
 
@@ -110,6 +110,16 @@ const FileUploader = () => {
         setUploadHistory([]);
         localStorage.removeItem('uploadHistory');
     };
+
+    const handleChatWithFile = (filename) => {
+        setCurrentCsvFile(filename);
+        setShowChat(true);
+    };
+
+    // If chat page is active, show it
+    if (showChat) {
+        return <ChatPage onBack={() => setShowChat(false)} csvFilename={currentCsvFile} />;
+    }
 
     return (
         <div className="file-uploader-container">
@@ -179,6 +189,12 @@ const FileUploader = () => {
                                 </div>
                                 <div className="history-actions">
                                     <a href={file.url} target="_blank" rel="noopener noreferrer" className="view-btn">View</a>
+                                    <button 
+                                        className="chat-btn" 
+                                        onClick={() => handleChatWithFile(file.name)}
+                                    >
+                                        Chat
+                                    </button>
                                     <button onClick={() => removeHistoryItem(index)} className="delete-btn">
                                         <FaTrash />
                                     </button>

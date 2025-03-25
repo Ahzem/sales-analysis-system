@@ -5,8 +5,8 @@ import './App.css';
 const App = () => {
     return (
         <div className="container">
-            <h1>File Upload</h1>
-            <p className="subtitle">Upload your files securely to the cloud</p>
+            <h1>Cake Shop Analytics</h1>
+            <p className="subtitle">Upload your sales data for AI-powered insights</p>
             <FileUploader />
         </div>
     );
