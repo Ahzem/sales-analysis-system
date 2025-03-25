@@ -24,6 +24,8 @@ basic_chat = Agent(
         "For simple questions, provide brief, helpful responses",
         "If unsure, suggest asking about cake shop sales or analytics"
     ],
+    add_history_to_messages=True,
+    num_history_responses=10,
     markdown=True
 )
 
@@ -54,8 +56,14 @@ data_analyst = DuckDbAgent(
         "- Seasonal sales patterns with month/quarter breakdowns",
         "- Impact of discounts on revenue and purchase behavior",
         "Include visual-friendly formatting for data presentation",
-        "Always provide specific product forecasts for 2026 based on historical trends"
+        "Always provide specific product forecasts for 2026 based on historical trends",
+        "No need to show SQL queries in responses",
+        "Provide actionable insights for improving sales and profitability",
+        "Focus on data-driven recommendations for the cake shop business",
+        
     ],
+    add_history_to_messages=True,
+    num_history_responses=10,
     markdown=True,
 )
 
@@ -70,6 +78,8 @@ web_agent = Agent(
         "Focus on bakery industry trends, cake market forecasts, and consumer preferences",
         "Provide specific, actionable insights for a cake shop business"
     ],
+    add_history_to_messages=True,
+    num_history_responses=10,
     show_tool_calls=True,
     markdown=True,
 )
@@ -143,10 +153,6 @@ def main():
         
         if not user_input:
             continue
-            
-        clear_screen()
-        print(f"You: {user_input}\n")  # Only show question once
-        print("Thinking...\n")
         
         try:
             # Get response and post-process it
@@ -164,7 +170,7 @@ def main():
             fallback = "I'm having trouble with that question. Could you try asking something else about the cake shop?"
             print("\n🤖 CakeBuddy: " + fallback + "\n")
         
-        print("-" * 80)
+        print("-" * 120)
 
 def remove_sql_queries(text):
     """Remove SQL query blocks from the response text"""
@@ -235,7 +241,5 @@ def format_as_tables(text):
                 text = text[:list_start] + table_header + table_rows + text[list_end:]
     
     return text
-
-
 if __name__ == "__main__":
     main()
