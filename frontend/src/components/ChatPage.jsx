@@ -85,8 +85,12 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
         // Clear input field
         setNewMessage('');
         
-        // Send message to AI service
-        api.post('/chat', { message: msg, csvFilename })
+        // Send message to AI service with file ID
+        api.post('/chat', { 
+            message: msg, 
+            csvFilename, 
+            fileId  // Add fileId to the request
+        })
             .then(response => {
                 const botMessage = {
                     id: Date.now() + 1,

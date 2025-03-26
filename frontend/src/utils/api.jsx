@@ -48,10 +48,13 @@ const api = {
     // Chat operations (FastAPI backend)
     post: (endpoint, data) => {
         if (endpoint === '/chat') {
-            return chatApi.post('/chat', data);
+            return chatApi.post(endpoint, data);
         }
         return fileApi.post(endpoint, data);
-    }
+    },
+    
+    // Add a method to get file URL by ID
+    getFileUrlById: (fileId) => fileApi.get(`/url/${fileId}`)
 };
 
 export default api;

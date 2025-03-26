@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 class ChatRequest(BaseModel):
     message: str
     csvFilename: str = None
+    fileId: str = None
 
 class ChatResponse(BaseModel):
     response: str
@@ -50,10 +51,19 @@ async def root():
 async def chat(request: ChatRequest):
     try:
         logger.info(f"Received chat request: {request.message}")
-        logger.info(f"Using CSV file: {get_csv_url()}")
+        
+        # Log the file ID if provided
+        if request.fileId:
+            logger.info(f"Using file ID: {request.fileId}")
+            csv_url = get_csv_url(request.fileId)
+        else:
+            logger.info("No file ID provided, using default CSV file")
+            csv_url = get_csv_url()
+            
+        logger.info(f"Using CSV URL: {csv_url}")
         
         # Process the message using the AI agent
-        response_text = handle_user_input(request.message)
+        response_text = handle_user_input(request.message, csv_url)
         
         # Make sure to filter any SQL queries that might have slipped through
         response_text = remove_sql_queries(response_text)

@@ -27,7 +27,6 @@ const FileUploader = () => {
     const [currentCsvFile, setCurrentCsvFile] = useState(null);
     const [currentFileId, setCurrentFileId] = useState(null);
 
-    // Fetch file history from server based on browser ID
     const fetchFileHistory = async () => {
         setIsLoadingHistory(true);
         try {
@@ -47,7 +46,6 @@ const FileUploader = () => {
         }
     };
 
-    // Load file history on component mount
     useEffect(() => {
         fetchFileHistory();
     }, []);
@@ -147,7 +145,6 @@ const FileUploader = () => {
         setShowChat(true);
     };
 
-    // If chat page is active, show it
     if (showChat) {
         return <ChatPage 
             onBack={() => setShowChat(false)} 
