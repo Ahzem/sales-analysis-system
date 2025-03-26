@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from app.api.get_csv_url import get_csv_url
 from pydantic import BaseModel
 import os
 import sys
@@ -50,6 +50,7 @@ async def root():
 async def chat(request: ChatRequest):
     try:
         logger.info(f"Received chat request: {request.message}")
+        logger.info(f"Using CSV file: {get_csv_url()}")
         
         # Process the message using the AI agent
         response_text = handle_user_input(request.message)

@@ -9,7 +9,7 @@ const fileApi = axios.create({
 });
 
 const chatApi = axios.create({
-    baseURL: 'http://localhost:5003', // Correct port for FastAPI backend
+    baseURL: 'http://localhost:5002', // FastAPI backend
     headers: {
         'Content-Type': 'application/json',
     },

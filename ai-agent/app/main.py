@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from phi.agent import Agent
 from phi.model.openai import OpenAIChat
 from phi.tools.googlesearch import GoogleSearch
@@ -10,7 +11,11 @@ import logging
 
 load_dotenv()
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO, 
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                   handlers=[logging.StreamHandler(sys.stdout)])
+
+logger = logging.getLogger("CakeBuddy")
 
 # Simple chatbot for greetings and basic interactions
 basic_chat = Agent(
@@ -44,24 +49,54 @@ data_analyst = DuckDbAgent(
         }
     ),
     instructions=[
-        "Analyze the cake shop's sales data comprehensively",
-        "Always calculate and provide the following exact metrics in your analysis:",
-        "- Total Sales Revenue = Sum of all invoice totals",
-        "- Total Number of Sales = Count of invoices",
-        "- Average Order Value (AOV) = Total Sales Revenue / Total Number of Sales",
-        "- Sales Growth Rate = (Current Period Sales - Previous Period Sales) / Previous Period Sales",
-        "- Top & Low-Selling Products by both revenue and quantity",
-        "- Profit Per Product calculations where possible",
-        "- Customer retention rates and purchase frequency",
-        "- Seasonal sales patterns with month/quarter breakdowns",
-        "- Impact of discounts on revenue and purchase behavior",
-        "Include visual-friendly formatting for data presentation",
-        "Always provide specific product forecasts for 2026 based on historical trends",
+        "You are CakeBuddy's AI-powered analytics system that analyzes cake shop sales data comprehensively",
+        "When analyzing data, always calculate and provide relevant metrics from these categories:",
+        
+        "1. Sales Performance Metrics:",
+        "   - Total Sales Revenue = Sum of all invoice totals",
+        "   - Total Number of Sales = Count of invoices",
+        "   - Average Order Value (AOV) = Total Sales Revenue / Total Number of Sales",
+        "   - Sales Growth Rate = (Current Period Sales - Previous Period Sales) / Previous Period Sales",
+        
+        "2. Product Performance & Profitability:",
+        "   - Top-Selling Products by both revenue and quantity",
+        "   - Low-Selling Products by both revenue and quantity",
+        "   - Profit Per Product where possible",
+        "   - Total Profit across all products",
+        
+        "3. Customer Insights:",
+        "   - Top Customers by Revenue",
+        "   - Customer Retention Rate = Percentage of repeat customers",
+        "   - Average Purchase Frequency = Total Orders / Unique Customers",
+        "   - Customer Lifetime Value (CLV) = (Average Order Value × Purchase Frequency × Retention Rate)",
+        
+        "4. Inventory & Stock Analysis:",
+        "   - Most Profitable Products = Products with the highest total profit",
+        "   - Slow-Moving Inventory = Products with low sales over a period",
+        "   - Stock Turnover analysis where possible",
+        
+        "5. Seasonal Trends & Forecasting:",
+        "   - Monthly/Quarterly Sales Trends with clear identification of peak periods",
+        "   - Demand Forecasting for 2026 based on historical trends",
+        "   - Price Sensitivity Analysis where possible",
+        
+        "6. Discount & Pricing Effectiveness:",
+        "   - Impact of Discounts on Sales = Comparing sales before and after discounts",
+        "   - Best-Performing Discount Strategies",
+        "   - Markdown Loss analysis if data permits",
+        
+        "Always provide precise numerical answers with calculations explained",
+        "Use visual-friendly formatting like tables and lists for data presentation",
+        "Ensure all percentages are properly calculated and clearly labeled",
+        "Provide year-over-year comparisons when analyzing trends",
+        "When answering specific questions, focus on the requested metric but include related insights",
+        "For forecasting, use time series analysis techniques and explain your methodology",
+        "Include actionable business recommendations based on data insights",
+        "Use consistent number formatting (e.g., '$1,234.56' for currency)",
+        
         "NEVER INCLUDE ANY SQL QUERIES IN YOUR RESPONSES",
         "DO NOT MENTION SQL OR QUERY SYNTAX AT ALL",
-        "NEVER say 'Here is the SQL query used' or similar phrases",
-        "Provide actionable insights for improving sales and profitability",
-        "Focus on data-driven recommendations for the cake shop business",
+        "Present all findings as if they came from direct data analysis without mentioning database operations",
     ],
     add_history_to_messages=True,
     num_history_responses=10,
@@ -103,10 +138,55 @@ def greeting_handler(user_input):
     response = basic_chat.run(user_input)
     return extract_response_content(response)
 
+def format_analysis_response(response_text):
+    """Enhance and format the analysis response for better presentation"""
+    import re
+    
+    # Ensure all currency values have dollar signs
+    def add_dollar_sign(match):
+        value = match.group(1)
+        # Only add $ if it doesn't already have one
+        if not value.strip().startswith('$'):
+            return f"${value}"
+        return value
+    
+    # Add dollar signs to currency values (matches numbers with decimal points not preceded by $)
+    response_text = re.sub(r'(\d{1,3}(?:,\d{3})*\.\d{2})', add_dollar_sign, response_text)
+    
+    # Format percentages consistently (ensure % symbol is attached)
+    response_text = re.sub(r'(\d+\.?\d*)\s+%', r'\1%', response_text)
+    
+    # Emphasize key metrics for visibility
+    response_text = re.sub(r'(Total Sales Revenue|Average Order Value|Sales Growth Rate|Total Profit|Customer Retention Rate):', r'**\1**:', response_text)
+    
+    # Add section dividers for long responses
+    if len(response_text) > 500:
+        if "Top-Selling Products" in response_text and "---" not in response_text:
+            response_text = response_text.replace("Top-Selling Products", "\n---\n### Top-Selling Products", 1)
+        if "Customer Insights" in response_text and "---" not in response_text:
+            response_text = response_text.replace("Customer Insights", "\n---\n### Customer Insights", 1)
+    
+    return response_text
+
 def analysis_handler(user_input):
-    """Handle cake shop analysis requests"""
-    response = data_analyst.run(user_input)
-    return extract_response_content(response)
+    """Handle cake shop analysis requests with enhanced error handling"""
+    try:
+        response = data_analyst.run(user_input)
+        response_text = extract_response_content(response)
+        # Apply formatting enhancements
+        response_text = format_analysis_response(response_text)
+        return response_text
+    except Exception as e:
+        logger.error(f"Analysis handler error: {str(e)}", exc_info=True)
+        # Provide a more specific error based on the query type
+        if "profit margin" in user_input.lower():
+            return "I'm sorry, I couldn't calculate the profit margins you requested. Our system might not have the cost data needed for this analysis."
+        elif "forecast" in user_input.lower() or "predict" in user_input.lower():
+            return "I'm sorry, I couldn't generate the forecast you requested. This might require more historical data than is currently available."
+        elif "customer" in user_input.lower():
+            return "I'm sorry, I couldn't retrieve the customer data you requested. Our customer information might be limited in the current dataset."
+        else:
+            return "I'm sorry, I encountered an error while analyzing that data. Could you try asking a different question about our sales or products?"
 
 def web_search_handler(user_input):
     """Handle web search requests"""
@@ -117,25 +197,104 @@ def handle_user_input(user_input):
     """Route user input to the appropriate handler"""
     # Simple greeting detection
     greeting_phrases = ["hi", "hello", "hey", "greetings", "good morning", "good afternoon", "howdy"]
+    user_input_lower = user_input.lower()
+    
+    # Print debug info
+    logger.info(f"Processing user input: '{user_input}'")
+    csv_url = get_csv_url()
+    logger.info(f"Current CSV URL: {csv_url}")
     
     # Check if this is a simple greeting
-    if any(phrase in user_input.lower() for phrase in greeting_phrases) or len(user_input.strip().split()) < 3:
+    is_greeting = any(phrase in user_input_lower for phrase in greeting_phrases)
+    is_short = len(user_input.strip().split()) < 3
+    
+    if is_greeting and is_short:
+        logger.info(f"Routing to greeting handler: is_greeting={is_greeting}, is_short={is_short}")
         return greeting_handler(user_input)
     
-    # Check for analytics keywords
-    analytics_keywords = ["sales", "revenue", "product", "customer", "profit", "trend", 
-                         "analysis", "data", "performance", "forecast", "recommend"]
+    # Expanded analytics keywords organized by category
+    analytics_keywords = {
+        "sales": ["sales", "revenue", "income", "turnover", "earnings", "growth", "decline", "increase", "decrease"],
+        "products": ["cake", "cakes", "product", "best-selling", "best selling", "top", "lowest", "highest", "popular", "unpopular"],
+        "metrics": ["profit", "margin", "percentage", "ratio", "average", "mean", "total", "sum", "count", "number"],
+        "time": ["month", "year", "quarter", "seasonal", "season", "period", "trend", "forecast", "predict", "projection", "2026"],
+        "customer": ["customer", "buyer", "consumer", "client", "retention", "repeat", "frequency", "lifetime", "loyal", "churn"],
+        "inventory": ["inventory", "stock", "supply", "turnover", "slow-moving", "excess", "shortage"],
+        "pricing": ["price", "pricing", "discount", "markdown", "promotion", "deal", "offer", "sale", "reduction"]
+    }
     
-    if any(keyword in user_input.lower() for keyword in analytics_keywords):
-        return analysis_handler(user_input)
+    # Expanded priority combinations
+    priority_combinations = [
+        # Product analysis combinations
+        ("cake", "highest"), ("cake", "top"), ("cake", "profit"), ("cake", "margin"),
+        ("cake", "revenue"), ("cake", "sales"), ("cake", "popular"), ("cake", "best"),
+        
+        # Time-based analysis
+        ("monthly", "trends"), ("quarterly", "performance"), ("year", "comparison"),
+        ("seasonal", "pattern"), ("forecast", "2026"),
+        
+        # Customer analysis
+        ("customer", "retention"), ("customer", "lifetime"), ("customer", "frequent"),
+        
+        # Discount analysis
+        ("discount", "impact"), ("discount", "effectiveness"), ("price", "sensitivity")
+    ]
     
-    # Check for web search keywords
-    web_keywords = ["market", "industry", "trends", "popular", "future", "consumer", "preference"]
+    # Check for priority combinations
+    for combo in priority_combinations:
+        if all(term in user_input_lower for term in combo):
+            logger.info(f"Priority routing to analysis handler: matched combination={combo}")
+            try:
+                return analysis_handler(user_input)
+            except Exception as e:
+                logger.error(f"Error in analysis_handler: {str(e)}")
+                return greeting_handler(f"I couldn't analyze that data about {combo[0]} {combo[1]}. Our system might not have that specific information.")
     
-    if any(keyword in user_input.lower() for keyword in web_keywords):
-        return web_search_handler(user_input)
+    # Flattened list of all analytics keywords
+    all_analytics_keywords = [word for category in analytics_keywords.values() for word in category]
+    
+    # Regular keyword matching - using all flattened keywords
+    matching_keywords = [keyword for keyword in all_analytics_keywords if keyword in user_input_lower]
+    logger.info(f"Analytics keywords found: {matching_keywords}")
+    
+    # Determine if this is likely an analytical question
+    if matching_keywords:
+        # Count keywords by category to determine the most relevant category
+        category_counts = {}
+        for category, keywords in analytics_keywords.items():
+            category_counts[category] = sum(1 for kw in keywords if kw in user_input_lower)
+        
+        dominant_category = max(category_counts.items(), key=lambda x: x[1])[0] if category_counts else None
+        logger.info(f"Dominant question category: {dominant_category}")
+        
+        if dominant_category:
+            logger.info(f"Routing to analysis handler with category: {dominant_category}")
+            try:
+                return analysis_handler(user_input)
+            except Exception as e:
+                logger.error(f"Error in analysis_handler: {str(e)}")
+                # Provide more specific fallback message based on category
+                if dominant_category == "sales":
+                    return greeting_handler(f"I couldn't analyze the sales data as requested. The information might be incomplete or unavailable.")
+                elif dominant_category == "products":
+                    return greeting_handler(f"I couldn't analyze the product data you asked about. The data might not be available in our system.")
+                elif dominant_category == "customers":
+                    return greeting_handler(f"I couldn't retrieve the customer insights you requested. Our database might not have that specific information.")
+                else:
+                    return greeting_handler(f"I couldn't analyze that data about {', '.join(matching_keywords[:2])}. Our system might not have that specific information.")
+    
+    # Check specifically for profit margin or similar terms
+    profit_margin_keywords = ["profit margin", "margins", "profitability", "profitable"]
+    if any(term in user_input_lower for term in profit_margin_keywords):
+        logger.info(f"Detected profit margin question, routing to analysis handler")
+        try:
+            return analysis_handler(user_input)
+        except Exception as e:
+            logger.error(f"Error in analysis_handler for profit margin query: {str(e)}")
+            return greeting_handler("I couldn't analyze the profit margin data you requested. This information might not be available in our system.")
     
     # Default to basic chat for everything else
+    logger.info("No keyword matches found, defaulting to greeting handler")
     return greeting_handler(user_input)
 
 def clear_screen():
@@ -243,5 +402,6 @@ def format_as_tables(text):
                 text = text[:list_start] + table_header + table_rows + text[list_end:]
     
     return text
+
 if __name__ == "__main__":
     main()
