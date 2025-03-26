@@ -3,30 +3,45 @@ import api from '../utils/api';
 
 const useFileUpload = () => {
     const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState(null);
     const [progress, setProgress] = useState(0);
+    const [error, setError] = useState(null);
 
     const uploadFile = async (file) => {
         setIsUploading(true);
-        setError(null);
         setProgress(0);
-
-        const formData = new FormData();
-        formData.append('file', file);
+        setError(null);
 
         try {
-            // Use the upload method from the updated api object
-            const response = await api.upload(formData);
+            // Simulate progress updates
+            const progressInterval = setInterval(() => {
+                setProgress(prev => {
+                    const increment = Math.random() * 10;
+                    const newProgress = Math.min(prev + increment, 90); // Max 90% for simulation
+                    return newProgress;
+                });
+            }, 500);
+
+            // Upload file
+            const response = await api.upload(file);
+            
+            // Complete progress
+            clearInterval(progressInterval);
+            setProgress(100);
+            
             return response.data;
         } catch (err) {
-            setError(err.response?.data?.message || 'Error uploading file');
+            setError(err.response?.data?.message || 'Upload failed. Please try again.');
             throw err;
         } finally {
-            setIsUploading(false);
+            // Small delay before completing to make UI feel smoother
+            setTimeout(() => {
+                setIsUploading(false);
+                setProgress(0);
+            }, 500);
         }
     };
 
-    return { uploadFile, isUploading, error, progress };
+    return { uploadFile, isUploading, progress, error };
 };
 
 export default useFileUpload;

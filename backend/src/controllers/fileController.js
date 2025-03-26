@@ -1,10 +1,10 @@
 const { uploadFileToS3 } = require('../services/s3Service');
-const { deactivateOldFiles } = require('../services/fileService');
 const File = require('../models/FileModel');
 
 const uploadFile = async (req, res, next) => {
     try {
         const file = req.file;
+        const browserId = req.body.browserId; // Get browser ID from request body
 
         if (!file) {
             return res.status(400).json({ message: 'File is required.' });
@@ -15,9 +15,6 @@ const uploadFile = async (req, res, next) => {
             return res.status(400).json({ message: 'Only CSV files are allowed.' });
         }
 
-        // Deactivate all previous files
-        await deactivateOldFiles();
-
         // Upload file to S3
         const result = await uploadFileToS3(file);
 
@@ -26,13 +23,14 @@ const uploadFile = async (req, res, next) => {
             file_name: file.originalname,
             file_url: result.Location,
             file_type: file.mimetype,
-            is_active: true
+            browser_id: browserId,
         });
         await newFile.save();
 
         res.status(200).json({ 
             message: 'File uploaded successfully!', 
-            url: result.Location 
+            url: result.Location,
+            fileId: newFile._id
         });
     } catch (err) {
         next(err);

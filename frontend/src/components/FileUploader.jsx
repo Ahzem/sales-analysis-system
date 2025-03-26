@@ -1,34 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import useFileUpload from '../hooks/useFileUpload';
 import { 
   FaCloudUploadAlt, 
-  FaFolder, 
   FaFolderOpen, 
   FaFileAlt, 
-  FaFilePdf, 
-  FaFileExcel, 
-  FaFileImage, 
-  FaFileWord,
   FaFileCsv,
-  FaTrash
+  FaTrash,
+  FaSync
 } from 'react-icons/fa';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import Toast from '../components/Toast';
 import ProgressBar from '../components/ProgressBar';
 import ChatPage from '../components/ChatPage';
+import api from '../utils/api';
 import '../styles/FileUploader.css';
 
 const FileUploader = () => {
     const { uploadFile, isUploading, error, progress } = useFileUpload();
     const [selectedFile, setSelectedFile] = useState(null);
     const [toast, setToast] = useState({ visible: false, message: '', url: '', type: 'success' });
-    const [uploadHistory, setUploadHistory] = useState(() => {
-        const saved = localStorage.getItem('uploadHistory');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [uploadHistory, setUploadHistory] = useState([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [showChat, setShowChat] = useState(false);
     const [currentCsvFile, setCurrentCsvFile] = useState(null);
+
+    // Fetch file history from server based on browser ID
+    const fetchFileHistory = async () => {
+        setIsLoadingHistory(true);
+        try {
+            const response = await api.getFilesByBrowserId();
+            if (response.data && response.data.files) {
+                setUploadHistory(response.data.files);
+            }
+        } catch (err) {
+            console.error('Failed to fetch file history:', err);
+            setToast({
+                visible: true,
+                message: 'Failed to load your file history.',
+                type: 'error'
+            });
+        } finally {
+            setIsLoadingHistory(false);
+        }
+    };
+
+    // Load file history on component mount
+    useEffect(() => {
+        fetchFileHistory();
+    }, []);
 
     const getFileIcon = (filename) => {
         const extension = filename.split('.').pop().toLowerCase();
@@ -43,17 +63,6 @@ const FileUploader = () => {
             try {
                 const result = await uploadFile(file);
                 
-                // Update upload history
-                const newHistory = [{
-                    name: file.name,
-                    size: formatBytes(file.size),
-                    date: new Date().toLocaleString(),
-                    url: result.url
-                }, ...uploadHistory.slice(0, 4)];
-                
-                setUploadHistory(newHistory);
-                localStorage.setItem('uploadHistory', JSON.stringify(newHistory));
-                
                 // Show success toast
                 setToast({
                     visible: true,
@@ -61,6 +70,9 @@ const FileUploader = () => {
                     url: result.url,
                     type: 'success'
                 });
+                
+                // Refresh file history
+                fetchFileHistory();
                 
                 // Set the current CSV file for the chat page
                 setCurrentCsvFile(file.name);
@@ -91,6 +103,11 @@ const FileUploader = () => {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     };
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    };
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
         onDrop,
         multiple: false,
@@ -99,20 +116,30 @@ const FileUploader = () => {
         }
     });
 
-    const removeHistoryItem = (index) => {
-        const newHistory = [...uploadHistory];
-        newHistory.splice(index, 1);
-        setUploadHistory(newHistory);
-        localStorage.setItem('uploadHistory', JSON.stringify(newHistory));
+    const handleDeleteFile = async (fileId) => {
+        try {
+            await api.deleteFile(fileId);
+            
+            // Update the local state to remove the file
+            setUploadHistory(prev => prev.filter(file => file._id !== fileId));
+            
+            setToast({
+                visible: true,
+                message: 'File deleted successfully.',
+                type: 'success'
+            });
+        } catch (err) {
+            console.error('Failed to delete file:', err);
+            setToast({
+                visible: true,
+                message: 'Failed to delete file. Please try again.',
+                type: 'error'
+            });
+        }
     };
 
-    const clearHistory = () => {
-        setUploadHistory([]);
-        localStorage.removeItem('uploadHistory');
-    };
-
-    const handleChatWithFile = (filename) => {
-        setCurrentCsvFile(filename);
+    const handleChatWithFile = (file) => {
+        setCurrentCsvFile(file.file_name);
         setShowChat(true);
     };
 
@@ -167,43 +194,62 @@ const FileUploader = () => {
                 </div>
             </div>
 
-            {uploadHistory.length > 0 && (
-                <div className="upload-history">
-                    <div className="history-header">
-                        <h3>Recent Uploads</h3>
-                        <button className="clear-history" onClick={clearHistory}>Clear All</button>
+            <div className="upload-history">
+                <div className="history-header">
+                    <h3>Your Uploaded Files</h3>
+                    <button 
+                        className="refresh-history" 
+                        onClick={fetchFileHistory} 
+                        disabled={isLoadingHistory}
+                    >
+                        <FaSync className={isLoadingHistory ? "spinning" : ""} />
+                    </button>
+                </div>
+                
+                {isLoadingHistory ? (
+                    <div className="loading-history">
+                        <AiOutlineLoading3Quarters className="spinning" />
+                        <p>Loading your files...</p>
                     </div>
+                ) : uploadHistory.length > 0 ? (
                     <div className="history-list">
-                        {uploadHistory.map((file, index) => (
-                            <div key={index} className="history-item">
+                        {uploadHistory.map((file) => (
+                            <div key={file._id} className="history-item">
                                 <div className="history-icon">
-                                    {getFileIcon(file.name)}
+                                    {getFileIcon(file.file_name)}
                                 </div>
                                 <div className="history-details">
-                                    <div className="history-name">{file.name}</div>
+                                    <div className="history-name">{file.file_name}</div>
                                     <div className="history-meta">
-                                        <span>{file.size}</span>
+                                        <span>{formatBytes(file.size || 0)}</span>
                                         <span>•</span>
-                                        <span>{file.date}</span>
+                                        <span>{formatDate(file.uploaded_at)}</span>
                                     </div>
                                 </div>
                                 <div className="history-actions">
-                                    <a href={file.url} target="_blank" rel="noopener noreferrer" className="view-btn">View</a>
+                                    <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="view-btn">View</a>
                                     <button 
                                         className="chat-btn" 
-                                        onClick={() => handleChatWithFile(file.name)}
+                                        onClick={() => handleChatWithFile(file)}
                                     >
                                         Chat
                                     </button>
-                                    <button onClick={() => removeHistoryItem(index)} className="delete-btn">
+                                    <button 
+                                        onClick={() => handleDeleteFile(file._id)} 
+                                        className="delete-btn"
+                                    >
                                         <FaTrash />
                                     </button>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div className="empty-history">
+                        <p>You haven't uploaded any files yet.</p>
+                    </div>
+                )}
+            </div>
 
             <Toast 
                 message={toast.message}
