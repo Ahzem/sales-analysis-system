@@ -15,6 +15,7 @@ import ProgressBar from '../components/ProgressBar';
 import ChatPage from '../components/ChatPage';
 import api from '../utils/api';
 import '../styles/FileUploader.css';
+import { getChatHistory } from '../utils/chatHistoryUtils';
 
 const FileUploader = () => {
     const { uploadFile, isUploading, error, progress } = useFileUpload();
@@ -24,6 +25,7 @@ const FileUploader = () => {
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [showChat, setShowChat] = useState(false);
     const [currentCsvFile, setCurrentCsvFile] = useState(null);
+    const [currentFileId, setCurrentFileId] = useState(null);
 
     // Fetch file history from server based on browser ID
     const fetchFileHistory = async () => {
@@ -74,8 +76,9 @@ const FileUploader = () => {
                 // Refresh file history
                 fetchFileHistory();
                 
-                // Set the current CSV file for the chat page
+                // Set the current CSV file and fileId for the chat page
                 setCurrentCsvFile(file.name);
+                setCurrentFileId(result.fileId);  // This should be returned from your backend
                 
                 // Navigate to chat after a short delay
                 setTimeout(() => {
@@ -140,12 +143,17 @@ const FileUploader = () => {
 
     const handleChatWithFile = (file) => {
         setCurrentCsvFile(file.file_name);
+        setCurrentFileId(file._id);
         setShowChat(true);
     };
 
     // If chat page is active, show it
     if (showChat) {
-        return <ChatPage onBack={() => setShowChat(false)} csvFilename={currentCsvFile} />;
+        return <ChatPage 
+            onBack={() => setShowChat(false)} 
+            csvFilename={currentCsvFile} 
+            fileId={currentFileId}
+        />;
     }
 
     return (
@@ -213,13 +221,18 @@ const FileUploader = () => {
                     </div>
                 ) : uploadHistory.length > 0 ? (
                     <div className="history-list">
-                        {uploadHistory.map((file) => (
+                        {uploadHistory.map((file) => {
+                            const hasHistory = getChatHistory(file._id).length > 0;
+                            return (
                             <div key={file._id} className="history-item">
                                 <div className="history-icon">
                                     {getFileIcon(file.file_name)}
                                 </div>
                                 <div className="history-details">
-                                    <div className="history-name">{file.file_name}</div>
+                                    <div className="history-name">
+                                        {file.file_name}
+                                        {hasHistory && <span className="has-chat-badge">Chat history</span>}
+                                    </div>
                                     <div className="history-meta">
                                         <span>{formatBytes(file.size || 0)}</span>
                                         <span>•</span>
@@ -229,10 +242,10 @@ const FileUploader = () => {
                                 <div className="history-actions">
                                     <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="view-btn">View</a>
                                     <button 
-                                        className="chat-btn" 
-                                        onClick={() => handleChatWithFile(file)}
-                                    >
-                                        Chat
+                                            className="chat-btn" 
+                                            onClick={() => handleChatWithFile(file)}
+                                        >
+                                            {hasHistory ? 'Continue Chat' : 'Chat'}
                                     </button>
                                     <button 
                                         onClick={() => handleDeleteFile(file._id)} 
@@ -242,7 +255,8 @@ const FileUploader = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 ) : (
                     <div className="empty-history">

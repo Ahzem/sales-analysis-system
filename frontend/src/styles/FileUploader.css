@@ -247,6 +247,16 @@
     gap: 0.5rem;
 }
 
+.has-chat-badge {
+    font-size: 0.7rem;
+    background-color: #3498db;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
 .loading-history {
     display: flex;
     flex-direction: column;

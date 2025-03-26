@@ -29,8 +29,6 @@ basic_chat = Agent(
         "For simple questions, provide brief, helpful responses",
         "If unsure, suggest asking about cake shop sales or analytics"
     ],
-    add_history_to_messages=True,
-    num_history_responses=10,
     markdown=True
 )
 
@@ -111,8 +109,6 @@ data_analyst = DuckDbAgent(
         "DO NOT MENTION SQL OR QUERY SYNTAX AT ALL",
         "Present all findings as if they came from direct data analysis without mentioning database operations",
     ],
-    add_history_to_messages=True,
-    num_history_responses=10,
     markdown=True,
     show_sql=False,
 )
@@ -128,10 +124,44 @@ web_agent = Agent(
         "Focus on bakery industry trends, cake market forecasts, and consumer preferences",
         "Provide specific, actionable insights for a cake shop business"
     ],
-    add_history_to_messages=True,
-    num_history_responses=10,
     show_tool_calls=True,
     markdown=True,
+)
+
+team_agent = Agent(
+    name="Team Agent",
+    team=[basic_chat, data_analyst, web_agent],
+    role="Coordinate responses from multiple agents",
+    model=OpenAIChat(model="gpt-4o"),
+    instructions=[
+        "You are the team coordinator for CakeBuddy's AI agents",
+        "Manage responses from multiple specialized team members:",
+        "1. Basic chat agent - For greetings and simple questions",
+        "2. Data analyst agent - For detailed analytics and reports on cake shop data",
+        "3. Web search agent - For market trends and external information",
+        
+        "For each user query, determine which team member(s) are best suited to respond",
+        "When coordinating responses, consider:",
+        "- For data questions, use the data analyst first",
+        "- For market trends or competitor info, use the web search agent",
+        "- For simple interactions, use the basic chat agent",
+        "- For complex queries, combine insights from multiple team members",
+        
+        "Always maintain continuity with previous conversation history",
+        "Reference previous exchanges when relevant to provide context",
+        "For follow-up questions, connect to earlier responses",
+        
+        "When providing analytical insights:",
+        "- Highlight key metrics with clear formatting",
+        "- Present data in well-organized sections",
+        "- Include actionable recommendations based on data",
+        
+        "Keep the final response conversational but informative",
+        "Aim to provide comprehensive but concise answers"
+    ],
+    add_history_to_messages=True,
+    num_history_responses=15,
+    markdown=True
 )
 
 def extract_response_content(response):
@@ -164,7 +194,7 @@ def format_analysis_response(response_text):
         return value
     
     # Add dollar signs to currency values (matches numbers with decimal points not preceded by $)
-    response_text = re.sub(r'(\d{1,3}(?:,\d{3})*\.\d{2})', add_dollar_sign, response_text)
+    # response_text = re.sub(r'(\d{1,3}(?:,\d{3})*\.\d{2})', add_dollar_sign, response_text)
     
     # Format percentages consistently (ensure % symbol is attached)
     response_text = re.sub(r'(\d+\.?\d*)\s+%', r'\1%', response_text)
