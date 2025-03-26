@@ -52,23 +52,34 @@ async def chat(request: ChatRequest):
     try:
         logger.info(f"Received chat request: {request.message}")
         
-        # Log the file ID if provided
-        if request.fileId:
-            logger.info(f"Using file ID: {request.fileId}")
-            csv_url = get_csv_url(request.fileId)
+        # Check if it's a simple greeting first to avoid loading CSV
+        greeting_phrases = ["hi", "hello", "hey", "greetings", "good morning", "good afternoon", "howdy"]
+        message_lower = request.message.lower()
+        is_greeting = any(phrase in message_lower for phrase in greeting_phrases)
+        is_short = len(request.message.strip().split()) < 3
+        
+        # For greetings, don't even bother with the file ID and CSV URL
+        if is_greeting and is_short:
+            logger.info("Detected simple greeting, bypassing CSV loading")
+            response_text = handle_user_input(request.message, None)
         else:
-            logger.info("No file ID provided, using default CSV file")
-            csv_url = get_csv_url()
+            # Only load the CSV URL if this is not a simple greeting
+            if request.fileId:
+                logger.info(f"Using file ID: {request.fileId}")
+                csv_url = get_csv_url(request.fileId)
+            else:
+                logger.info("No file ID provided, using default CSV file")
+                csv_url = get_csv_url()
+                
+            logger.info(f"Using CSV URL: {csv_url}")
             
-        logger.info(f"Using CSV URL: {csv_url}")
+            # Process the message using the AI agent
+            response_text = handle_user_input(request.message, csv_url)
         
-        # Process the message using the AI agent
-        response_text = handle_user_input(request.message, csv_url)
-        
-        # Make sure to filter any SQL queries that might have slipped through
+        # Always clean up the response
         response_text = remove_sql_queries(response_text)
         
-        logger.info(f"Generated response: {response_text[:100]}...")  # Log first 100 chars
+        logger.info(f"Generated response: {response_text[:100]}...")
         
         return ChatResponse(response=response_text)
     except Exception as e:

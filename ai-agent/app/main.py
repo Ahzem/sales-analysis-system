@@ -128,42 +128,6 @@ web_agent = Agent(
     markdown=True,
 )
 
-team_agent = Agent(
-    name="Team Agent",
-    team=[basic_chat, data_analyst, web_agent],
-    role="Coordinate responses from multiple agents",
-    model=OpenAIChat(model="gpt-4o"),
-    instructions=[
-        "You are the team coordinator for CakeBuddy's AI agents",
-        "Manage responses from multiple specialized team members:",
-        "1. Basic chat agent - For greetings and simple questions",
-        "2. Data analyst agent - For detailed analytics and reports on cake shop data",
-        "3. Web search agent - For market trends and external information",
-        
-        "For each user query, determine which team member(s) are best suited to respond",
-        "When coordinating responses, consider:",
-        "- For data questions, use the data analyst first",
-        "- For market trends or competitor info, use the web search agent",
-        "- For simple interactions, use the basic chat agent",
-        "- For complex queries, combine insights from multiple team members",
-        
-        "Always maintain continuity with previous conversation history",
-        "Reference previous exchanges when relevant to provide context",
-        "For follow-up questions, connect to earlier responses",
-        
-        "When providing analytical insights:",
-        "- Highlight key metrics with clear formatting",
-        "- Present data in well-organized sections",
-        "- Include actionable recommendations based on data",
-        
-        "Keep the final response conversational but informative",
-        "Aim to provide comprehensive but concise answers"
-    ],
-    add_history_to_messages=True,
-    num_history_responses=15,
-    markdown=True
-)
-
 def extract_response_content(response):
     """Extract the actual text content from a phi agent response"""
     if hasattr(response, 'content'):
@@ -251,17 +215,19 @@ def handle_user_input(user_input, csv_url=None):
     
     # Print debug info
     logger.info(f"Processing user input: '{user_input}'")
-    if not csv_url:
-        csv_url = get_csv_url()
-    logger.info(f"Current CSV URL: {csv_url}")
     
-    # Check if this is a simple greeting
+    # First check if this is a simple greeting BEFORE loading any CSV data
     is_greeting = any(phrase in user_input_lower for phrase in greeting_phrases)
     is_short = len(user_input.strip().split()) < 3
     
     if is_greeting and is_short:
         logger.info(f"Routing to greeting handler: is_greeting={is_greeting}, is_short={is_short}")
         return greeting_handler(user_input)
+    
+    # Only get the CSV URL if we're actually going to analyze data
+    if not csv_url:
+        csv_url = get_csv_url()
+    logger.info(f"Current CSV URL: {csv_url}")
 
     # Create a dynamic data analyst agent with the specific CSV URL
     if csv_url:
