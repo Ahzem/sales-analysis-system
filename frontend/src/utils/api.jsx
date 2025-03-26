@@ -15,10 +15,24 @@ const chatApi = axios.create({
     },
 });
 
+// Generate or retrieve browser ID
+const getBrowserId = () => {
+    let browserId = localStorage.getItem('browserId');
+    if (!browserId) {
+        browserId = 'browser_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('browserId', browserId);
+    }
+    return browserId;
+};
+
 // Export a combined API object
 const api = {
     // File upload operations (Node.js backend)
-    upload: (formData) => {
+    upload: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('browserId', getBrowserId()); // Add browser ID
+        
         return fileApi.post('/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -27,13 +41,20 @@ const api = {
     },
     getUrls: () => fileApi.get('/urls'),
     
+    // Browser history operations
+    getFilesByBrowserId: () => fileApi.get(`/files/browser/${getBrowserId()}`),
+    deleteFile: (fileId) => fileApi.delete(`/files/${fileId}`),
+    
     // Chat operations (FastAPI backend)
     post: (endpoint, data) => {
         if (endpoint === '/chat') {
-            return chatApi.post('/chat', data);
+            return chatApi.post(endpoint, data);
         }
         return fileApi.post(endpoint, data);
-    }
+    },
+    
+    // Add a method to get file URL by ID
+    getFileUrlById: (fileId) => fileApi.get(`/url/${fileId}`)
 };
 
 export default api;

@@ -48,49 +48,46 @@
 }
 
 .url-container {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    padding: 10px 12px;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  font-size: 0.9em;
 }
 
 .url-icon {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
+  margin-right: 8px;
+  font-size: 0.9em;
+  color: #666;
 }
 
 .url-text {
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: monospace;
-    letter-spacing: 0.5px;
-    flex: 1;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 250px;
 }
 
 .copy-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.2s;
 }
 
 .copy-button:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+  color: var(--primary-color);
+  background: none;
+  border: none;
 }
 
-.copy-button .icon {
-    font-size: 18px;
+.copy-button:focus {
+  outline: none;
 }
 
 .toast-close {

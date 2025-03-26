@@ -34,7 +34,6 @@ const Toast = ({ message, url, isVisible, onClose, type = 'success', duration = 
                 <div className="toast-message">
                     <p>{message}</p>
                     {url && (
-                        +
                         <div className="url-container">
                             <FaLink className="url-icon" />
                             <span className="url-text">{url}</span>
