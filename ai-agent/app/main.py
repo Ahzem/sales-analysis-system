@@ -50,7 +50,12 @@ data_analyst = DuckDbAgent(
     ),
     instructions=[
         "You are CakeBuddy's AI-powered analytics system that analyzes cake shop sales data comprehensively",
-        "When analyzing data, always calculate and provide relevant metrics from these categories:",
+        "When generating performance reports, always include these key sections:",
+        
+        "EXECUTIVE SUMMARY:",
+        "- Provide a concise 2-3 sentence overview highlighting the most significant findings",
+        "- Compare overall performance to previous periods (month-over-month and year-over-year)",
+        "- Include one critical recommendation based on the data",
         
         "1. Sales Performance Metrics:",
         "   - Total Sales Revenue = Sum of all invoice totals",
@@ -59,13 +64,13 @@ data_analyst = DuckDbAgent(
         "   - Sales Growth Rate = (Current Period Sales - Previous Period Sales) / Previous Period Sales",
         
         "2. Product Performance & Profitability:",
-        "   - Top-Selling Products by both revenue and quantity",
-        "   - Low-Selling Products by both revenue and quantity",
+        "   - Top 5 Selling Products by both revenue and quantity",
+        "   - Bottom 5 Selling Products by both revenue and quantity",
         "   - Profit Per Product where possible",
         "   - Total Profit across all products",
         
         "3. Customer Insights:",
-        "   - Top Customers by Revenue",
+        "   - Top 5 Customers by Revenue",
         "   - Customer Retention Rate = Percentage of repeat customers",
         "   - Average Purchase Frequency = Total Orders / Unique Customers",
         "   - Customer Lifetime Value (CLV) = (Average Order Value × Purchase Frequency × Retention Rate)",
@@ -77,7 +82,7 @@ data_analyst = DuckDbAgent(
         
         "5. Seasonal Trends & Forecasting:",
         "   - Monthly/Quarterly Sales Trends with clear identification of peak periods",
-        "   - Demand Forecasting for 2026 based on historical trends",
+        "   - Demand Forecasting for upcoming months based on historical trends",
         "   - Price Sensitivity Analysis where possible",
         
         "6. Discount & Pricing Effectiveness:",
@@ -85,13 +90,21 @@ data_analyst = DuckDbAgent(
         "   - Best-Performing Discount Strategies",
         "   - Markdown Loss analysis if data permits",
         
+        "7. Performance Comparison:",
+        "   - Compare with previous month (month-over-month)",
+        "   - Compare with same month last year (year-over-year)",
+        "   - Highlight significant changes (>10% change)",
+        
+        "8. Strategic Recommendations:",
+        "   - Provide 3-5 specific, actionable recommendations based on the data",
+        "   - Prioritize recommendations with highest potential impact",
+        "   - Include expected outcomes for each recommendation",
+        
         "Always provide precise numerical answers with calculations explained",
         "Use visual-friendly formatting like tables and lists for data presentation",
         "Ensure all percentages are properly calculated and clearly labeled",
-        "Provide year-over-year comparisons when analyzing trends",
         "When answering specific questions, focus on the requested metric but include related insights",
         "For forecasting, use time series analysis techniques and explain your methodology",
-        "Include actionable business recommendations based on data insights",
         "Use consistent number formatting (e.g., '$1,234.56' for currency)",
         
         "NEVER INCLUDE ANY SQL QUERIES IN YOUR RESPONSES",
@@ -159,12 +172,19 @@ def format_analysis_response(response_text):
     # Emphasize key metrics for visibility
     response_text = re.sub(r'(Total Sales Revenue|Average Order Value|Sales Growth Rate|Total Profit|Customer Retention Rate):', r'**\1**:', response_text)
     
+    # Format section headings for reports
+    response_text = re.sub(r'EXECUTIVE SUMMARY:', r'## EXECUTIVE SUMMARY', response_text)
+    response_text = re.sub(r'(\d+\.\s+)([\w\s&]+:)', r'### \1\2', response_text)
+    response_text = re.sub(r'(Strategic Recommendations:)', r'### \1', response_text)
+    
     # Add section dividers for long responses
     if len(response_text) > 500:
-        if "Top-Selling Products" in response_text and "---" not in response_text:
-            response_text = response_text.replace("Top-Selling Products", "\n---\n### Top-Selling Products", 1)
+        if "Product Performance" in response_text and "---" not in response_text:
+            response_text = response_text.replace("Product Performance", "\n---\n### Product Performance", 1)
         if "Customer Insights" in response_text and "---" not in response_text:
             response_text = response_text.replace("Customer Insights", "\n---\n### Customer Insights", 1)
+        if "Strategic Recommendations" in response_text and "---" not in response_text:
+            response_text = response_text.replace("Strategic Recommendations", "\n---\n### Strategic Recommendations", 1)
     
     return response_text
 
@@ -211,6 +231,25 @@ def handle_user_input(user_input):
     if is_greeting and is_short:
         logger.info(f"Routing to greeting handler: is_greeting={is_greeting}, is_short={is_short}")
         return greeting_handler(user_input)
+
+    # Check for report generation requests first - these are high priority
+    report_keywords = ["report", "detailed", "performance", "analysis", "analytics", "statistics", "metrics", "kpi", "dashboard"]
+    time_period_keywords = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", 
+                           "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec",
+                           "2025", "2024", "2023", "q1", "q2", "q3", "q4", "quarter", "monthly", "annual", "yearly"]
+    
+    has_report_keyword = any(keyword in user_input_lower for keyword in report_keywords)
+    has_time_period = any(period in user_input_lower for period in time_period_keywords)
+    
+    # Direct routing for report requests
+    if has_report_keyword and has_time_period:
+        logger.info(f"Detected report request with time period, routing to analysis handler")
+        try:
+            return analysis_handler(user_input)
+        except Exception as e:
+            logger.error(f"Error in analysis_handler for report: {str(e)}")
+            return "I'm sorry, I couldn't generate the requested report. There might be an issue with accessing the data for the specified time period."
+    
     
     # Expanded analytics keywords organized by category
     analytics_keywords = {
