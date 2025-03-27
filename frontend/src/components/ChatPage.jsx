@@ -14,6 +14,7 @@ import {
 import api from '../utils/api';
 import { getChatHistory, saveChatHistory, clearChatHistory } from '../utils/chatHistoryUtils';
 import '../styles/ChatPage.css';
+import CustomAlert from './CustomAlert';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -22,6 +23,7 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [showClearAlert, setShowClearAlert] = useState(false);
     const [suggestions] = useState([
         "What were our top 5 products by revenue?",
         "Show monthly sales trends for the past year",
@@ -163,18 +165,25 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
     };
 
     const handleClearHistory = () => {
-        if (window.confirm('Are you sure you want to clear the chat history? This cannot be undone.')) {
-            if (fileId) {
-                clearChatHistory(fileId);
-                // Reset to initial message
-                setMessages([{ 
-                    id: Date.now(), 
-                    text: `Hello! I'm CakeBuddy, your cake shop analytics assistant. I've analyzed your data from ${csvFilename || 'your CSV file'}. What would you like to know about your sales?`,
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                }]);
-            }
+        setShowClearAlert(true);
+    };
+
+    const confirmClearHistory = () => {
+        if (fileId) {
+            clearChatHistory(fileId);
+            // Reset to initial message
+            setMessages([{ 
+                id: Date.now(), 
+                text: `# Welcome to Sales Analytics\n\nI've loaded your data from **${csvFilename || 'your CSV file'}** and I'm ready to help you analyze your sales performance. \n\nYou can ask me about:\n- Revenue trends and performance metrics\n- Product analysis and comparisons\n- Customer segmentation and behavior\n- Seasonal patterns and forecasts\n\nWhat would you like to know about your sales data?`,
+                sender: 'bot',
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }]);
         }
+        setShowClearAlert(false);
+    };
+
+    const cancelClearHistory = () => {
+        setShowClearAlert(false);
     };
 
     useEffect(() => {
@@ -363,6 +372,14 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
                     </button>
                 </div>
             </form>
+
+            <CustomAlert
+                isVisible={showClearAlert}
+                title="Clear Chat History"
+                message="Are you sure you want to clear the chat history? This action cannot be undone."
+                onConfirm={confirmClearHistory}
+                onCancel={cancelClearHistory}
+            />
         </div>
     );
 };
