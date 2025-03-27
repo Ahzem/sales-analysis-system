@@ -19,7 +19,7 @@ import { getChatHistory } from '../utils/chatHistoryUtils';
 import SampleDataDownload from './SampleDataDownload';
 
 const FileUploader = () => {
-    const { uploadFile, isUploading, error, progress } = useFileUpload();
+    const { isUploading, error, progress } = useFileUpload();
     const [selectedFile, setSelectedFile] = useState(null);
     const [toast, setToast] = useState({ visible: false, message: '', url: '', type: 'success' });
     const [uploadHistory, setUploadHistory] = useState([]);
@@ -32,8 +32,8 @@ const FileUploader = () => {
         setIsLoadingHistory(true);
         try {
             const response = await api.getFilesByBrowserId();
-            if (response.data && response.data.files) {
-                setUploadHistory(response.data.files);
+            if (response && response.files) {
+                setUploadHistory(response.files);
             }
         } catch (err) {
             console.error('Failed to fetch file history:', err);
@@ -62,7 +62,7 @@ const FileUploader = () => {
         if (file) {
             setSelectedFile(file);
             try {
-                const result = await uploadFile(file);
+                const result = await api.uploadFile(file);
                 
                 // Show success toast
                 setToast({
