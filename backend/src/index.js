@@ -39,6 +39,7 @@ const init = async () => {
     // Middleware
     app.use(cors({
       origin: process.env.FRONTEND_URL || '*',
+      origin: 'http://localhost:5173',
       methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
       allowedHeaders: ['Content-Type', 'Authorization']
     }));
