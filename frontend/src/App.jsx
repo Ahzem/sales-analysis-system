@@ -5,7 +5,7 @@ import './App.css';
 const App = () => {
     return (
         <div className="container">
-            <h1>Cake Shop Analytics</h1>
+            <h1>Sales Analytics</h1>
             <p className="subtitle">Upload your sales data for AI-powered insights</p>
             <FileUploader />
         </div>

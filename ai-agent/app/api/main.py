@@ -40,7 +40,7 @@ class ChatResponse(BaseModel):
 @app.get("/")
 async def root():
     return {
-        "message": "CakeBuddy API is running",
+        "message": "Sales Analyst API is running",
         "docs": "/docs",
         "health": "/health",
         "endpoints": ["/chat"]
@@ -58,9 +58,12 @@ async def chat(request: ChatRequest):
         is_greeting = any(phrase in message_lower for phrase in greeting_phrases)
         is_short = len(request.message.strip().split()) < 3
         
-        # For greetings, don't even bother with the file ID and CSV URL
-        if is_greeting and is_short:
-            logger.info("Detected simple greeting, bypassing CSV loading")
+        # Check if it's a new file notification
+        is_new_file = "upload" in message_lower or "new file" in message_lower or "uploaded" in message_lower
+        
+        # For greetings or file notifications, don't even bother with the file ID and CSV URL
+        if (is_greeting and is_short) or is_new_file:
+            logger.info("Detected simple greeting or file upload notification, bypassing CSV loading")
             response_text = handle_user_input(request.message, None)
         else:
             # Only load the CSV URL if this is not a simple greeting

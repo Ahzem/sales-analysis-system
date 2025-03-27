@@ -23,11 +23,11 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [suggestions] = useState([
-        "Which cake had the highest sales revenue in 2025?",
-        "Show me the monthly sales trends for all cakes",
-        "What are the top 5 best-selling cakes by quantity?",
-        "Compare sales performance between different cake categories",
-        "Which cake has the highest profit margin?"
+        "What product had the highest sales revenue?",
+        "Show me the monthly sales trends",
+        "What are the top 5 best-selling products by quantity?",
+        "Compare sales performance between different regions",
+        "Which product category has the best profit margin?"
     ]);
     
     const messageEndRef = useRef(null);
@@ -39,13 +39,13 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
             if (history && history.length > 0) {
                 setMessages(history);
             } else {
-                // Set default greeting if no history exists
                 setMessages([{ 
                     id: 1, 
-                    text: `Hello! I'm CakeBuddy, your cake shop analytics assistant. I've analyzed your data from ${csvFilename || 'your CSV file'}. What would you like to know about your sales?`,
+                    text: `Hello! I'm your sales analytics assistant. I've analyzed your data from ${csvFilename || 'your CSV file'}. What would you like to know about your sales performance?`,
                     sender: 'bot',
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
+    
             }
         }
     }, [fileId, csvFilename]);
