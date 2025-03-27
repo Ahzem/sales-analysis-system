@@ -16,6 +16,7 @@ import ChatPage from '../components/ChatPage';
 import api from '../utils/api';
 import '../styles/FileUploader.css';
 import { getChatHistory } from '../utils/chatHistoryUtils';
+import SampleDataDownload from './SampleDataDownload';
 
 const FileUploader = () => {
     const { uploadFile, isUploading, error, progress } = useFileUpload();
@@ -155,6 +156,7 @@ const FileUploader = () => {
 
     return (
         <div className="file-uploader-container">
+            <SampleDataDownload />
             <div 
                 {...getRootProps()} 
                 className={`dropzone ${isUploading ? 'uploading' : ''} ${isDragActive ? 'active' : ''}`}
