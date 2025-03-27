@@ -1,12 +1,15 @@
 import requests
 import logging
+import os
+
+BACKEND_URL = os.environ.get('BACKEND_URL', 'http://localhost:5000')
 
 logger = logging.getLogger("CakeBuddy")
 
 def fetch_urls():
     """Fetch all file URLs from backend API and return them"""
     try:
-        response = requests.get('http://localhost:5000/api/urls')
+        response = requests.get(f'{BACKEND_URL}/api/urls')
         
         if response.status_code == 200:
             data = response.json()
