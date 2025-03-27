@@ -120,7 +120,7 @@ const FileUploader = () => {
 
     const handleDeleteFile = async (fileId) => {
         try {
-            await api.deleteFile(fileId);
+            await api.api.deleteFile(fileId);
             
             // Update the local state to remove the file
             setUploadHistory(prev => prev.filter(file => file._id !== fileId));
