@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const http = require("http");
 const connectDB = require("./config/db");
 const fileRoutes = require("./routes/fileRoutes");
+const visitorRoutes = require("./routes/visitorRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
 
@@ -39,18 +41,20 @@ const init = async () => {
     // Middleware
     app.use(cors({
       origin: process.env.FRONTEND_URL || '*',
-      origin: 'http://localhost:5173',
+      credentials: true,  // Important for cookie support
       methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
-      allowedHeaders: ['Content-Type', 'Authorization']
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Browser-Id']
     }));
+    app.use(cookieParser());  // Add cookie parser for browser ID
     app.use(express.json());
 
     // Routes
-    app.use("/api", fileRoutes);
+    app.use("/api/files", fileRoutes);
+    app.use("/api/visits", visitorRoutes);  // Add visitor routes
     
     // Default route
     app.get("/", (req, res) => {
-      res.send("Data Analyst AI Agent API is running");
+      res.send("Sales Analytics API is running");
     });
 
     // Error handler

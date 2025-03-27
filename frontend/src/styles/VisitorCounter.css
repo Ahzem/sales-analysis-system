@@ -1,0 +1,110 @@
+.visitor-counter {
+  display: flex;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(44, 62, 80, 0.1));
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  align-items: center;
+  justify-content: space-around;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+  max-width: 100%;
+  transition: all 0.3s ease;
+}
+
+.visitor-counter:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.visitor-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.visitor-stat:first-child {
+  border-right: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.visitor-icon {
+  font-size: 24px;
+  color: var(--primary-color);
+}
+
+.visitor-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.visitor-count {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.visitor-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.visitor-counter-loading {
+  justify-content: center;
+}
+
+.visitor-counter-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(52, 152, 219, 0.3);
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .visitor-counter {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(44, 62, 80, 0.15));
+    border: 1px solid rgba(52, 152, 219, 0.3);
+  }
+
+  .visitor-count {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .visitor-label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .visitor-stat:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .visitor-counter {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .visitor-stat {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .visitor-stat:first-child {
+    border-right: none;
+    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+    padding-bottom: 16px;
+  }
+}
