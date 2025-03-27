@@ -89,7 +89,7 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
         setNewMessage('');
         
         // Send message to AI service with file ID
-        api.post('/chat', { 
+        api.api.post('/chat', { 
             message: msg, 
             csvFilename, 
             fileId  // Add fileId to the request

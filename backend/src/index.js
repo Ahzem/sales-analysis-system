@@ -39,18 +39,39 @@ const init = async () => {
     await connectDB();
 
     // Middleware
-    app.use(cors({
-      origin: process.env.FRONTEND_URL || '*',
+    const corsOptions = {
+      origin: function (origin, callback) {
+        // Allow requests from:
+        // 1. The production frontend
+        // 2. Local development environments
+        // 3. Requests with no origin (like mobile apps or curl requests)
+        const allowedOrigins = [
+          'https://sales-analysis-frontend.onrender.com',
+          'http://localhost:3000',  // React default
+          'http://localhost:5173',  // Vite default
+          'http://localhost:8080',  // Another common port
+          undefined                 // Allow requests with no origin
+        ];
+        
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+          callback(null, true);
+        } else {
+          console.log(`Origin ${origin} not allowed by CORS`);
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,  // Important for cookie support
       methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Browser-Id']
-    }));
-    app.use(cookieParser());  // Add cookie parser for browser ID
+    };
+    
+    app.use(cors(corsOptions));
+    app.use(cookieParser());
     app.use(express.json());
 
     // Routes
-    app.use("/api/files", fileRoutes);
-    app.use("/api/visits", visitorRoutes);  // Add visitor routes
+    app.use("/api", fileRoutes);
+    app.use("/api/visits", visitorRoutes);
     
     // Default route
     app.get("/", (req, res) => {
