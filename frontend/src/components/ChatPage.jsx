@@ -23,11 +23,12 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [suggestions] = useState([
-        "What product had the highest sales revenue?",
-        "Show me the monthly sales trends",
-        "What are the top 5 best-selling products by quantity?",
-        "Compare sales performance between different regions",
-        "Which product category has the best profit margin?"
+        "What were our top 5 products by revenue?",
+        "Show monthly sales trends for the past year",
+        "Compare Q1 vs Q2 sales performance",
+        "Which customer segment is most profitable?",
+        "What's our average order value trend?",
+        "Identify underperforming product categories"
     ]);
     
     const messageEndRef = useRef(null);
@@ -41,7 +42,7 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
             } else {
                 setMessages([{ 
                     id: 1, 
-                    text: `Hello! I'm your sales analytics assistant. I've analyzed your data from ${csvFilename || 'your CSV file'}. What would you like to know about your sales performance?`,
+                    text: `# Welcome to Sales Analytics\n\nI've loaded your data from **${csvFilename || 'your CSV file'}** and I'm ready to help you analyze your sales performance. \n\nYou can ask me about:\n- Revenue trends and performance metrics\n- Product analysis and comparisons\n- Customer segmentation and behavior\n- Seasonal patterns and forecasts\n\nWhat would you like to know about your sales data?`,
                     sender: 'bot',
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
@@ -237,28 +238,36 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
                         <FaFileCsv />
                         <span>{csvFilename || 'Sales Analysis'}</span>
                     </div>
-                    <h2>CakeBuddy <span className="bot-subtitle">Analytics Assistant</span></h2>
+                    <h2 className="header-title">
+                        Sales Analysis Dashboard
+                        <span className="bot-subtitle">AI-Powered Insights & Analytics</span>
+                    </h2>
                 </div>
-                <button 
-                    className="clear-history-button" 
-                    onClick={handleClearHistory} 
-                    aria-label="Clear chat history"
-                    title="Clear chat history"
-                >
-                    <FaRegTrashAlt />
-                </button>
+                <div className="header-actions">
+                    <button 
+                        className="clear-history-button" 
+                        onClick={handleClearHistory} 
+                        aria-label="Clear chat history"
+                        title="Clear chat history"
+                    >
+                        <FaRegTrashAlt />
+                    </button>
+                </div>
             </div>
             
             <div className="chat-messages">
                 {messages.map((message) => (
                     <div key={message.id} className={`message ${message.sender} ${message.isError ? 'error' : ''}`}>
                         <div className="message-avatar">
-                            {message.sender === 'bot' ? <FaRobot /> : <FaUser />}
+                            {message.sender === 'bot' ? 
+                                <div className="bot-avatar"><FaRobot /></div> : 
+                                <div className="user-avatar"><FaUser /></div>
+                            }
                         </div>
                         <div className="message-content">
                             <div className="message-header">
                                 <span className="sender-name">
-                                    {message.sender === 'bot' ? 'CakeBuddy' : 'You'}
+                                    {message.sender === 'bot' ? 'Sales Analyst' : 'You'}
                                 </span>
                                 <span className="message-time">{message.timestamp}</span>
                             </div>
@@ -272,11 +281,11 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
                 {isLoading && (
                     <div className="message bot loading">
                         <div className="message-avatar">
-                            <FaRobot />
+                            <div className="bot-avatar"><FaRobot /></div>
                         </div>
                         <div className="message-content">
                             <div className="message-header">
-                                <span className="sender-name">CakeBuddy</span>
+                                <span className="sender-name">Sales Analyst</span>
                                 <span className="message-time">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                             <div className="message-text">
@@ -296,10 +305,10 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
                                         <div className="analyzing-text">
                                             <p>Analyzing sales data from <span className="file-highlight">{csvFilename}</span></p>
                                             <div className="analysis-steps">
-                                                <div className="analysis-step">Loading CSV data<span className="check-mark">✓</span></div>
-                                                <div className="analysis-step">Processing records<span className="analysis-dots"><span>.</span><span>.</span><span>.</span></span></div>
-                                                <div className="analysis-step pending">Running calculations</div>
-                                                <div className="analysis-step pending">Preparing insights</div>
+                                                <div className="analysis-step completed">Parsing data structure<span className="check-mark">✓</span></div>
+                                                <div className="analysis-step active">Computing metrics<span className="analysis-dots"><span>.</span><span>.</span><span>.</span></span></div>
+                                                <div className="analysis-step pending">Identifying patterns</div>
+                                                <div className="analysis-step pending">Generating insights</div>
                                             </div>
                                         </div>
                                     </div>
@@ -319,34 +328,40 @@ const ChatPage = ({ onBack, csvFilename, fileId }) => {
             </div>
             
             <div className="suggestions-container">
-                {suggestions.map((suggestion, index) => (
-                    <button 
-                        key={index} 
-                        className="suggestion-pill"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                        {suggestion.length > 30 ? suggestion.substring(0, 27) + '...' : suggestion}
-                    </button>
-                ))}
+                <div className="suggestions-label">Quick Questions:</div>
+                <div className="suggestions-scroll">
+                    {suggestions.map((suggestion, index) => (
+                        <button 
+                            key={index} 
+                            className="suggestion-pill"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                        >
+                            {suggestion.length > 30 ? suggestion.substring(0, 27) + '...' : suggestion}
+                        </button>
+                    ))}
+                </div>
             </div>
             
             <form className="chat-input" onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Ask about your sales data..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    ref={inputRef}
-                    disabled={isLoading}
-                />
-                <button 
-                    type="submit" 
-                    className="send-button"
-                    disabled={!newMessage.trim() || isLoading}
-                    aria-label="Send message"
-                >
-                    <FaPaperPlane />
-                </button>
+                <div className="input-container">
+                    <input
+                        type="text"
+                        placeholder="Ask about your sales data..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        ref={inputRef}
+                        disabled={isLoading}
+                        className="message-input"
+                    />
+                    <button 
+                        type="submit" 
+                        className="send-button"
+                        disabled={!newMessage.trim() || isLoading}
+                        aria-label="Send message"
+                    >
+                        <FaPaperPlane />
+                    </button>
+                </div>
             </form>
         </div>
     );

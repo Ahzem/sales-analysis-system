@@ -11,13 +11,13 @@
 }
 
 .chat-header {
-    background-color: var(--primary-color);
+    background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+    padding: 16px 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     color: white;
-    padding: 16px 20px;
     display: flex;
     align-items: center;
     gap: 16px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 10;
 }
 
@@ -27,10 +27,27 @@
     font-weight: 600;
 }
 
+.header-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
 .bot-subtitle {
-    font-size: 0.9rem;
-    font-weight: 400;
-    opacity: 0.8;
+  font-size: 0.85rem;
+  font-weight: 400;
+  opacity: 0.85;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 .header-info {
@@ -59,12 +76,35 @@
     justify-content: center;
     cursor: pointer;
     padding: 0;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .back-button:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateX(-2px);
+}
+
+.clear-history-button {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.clear-history-button:hover {
+  transform: rotate(10deg);
+  color: var(--error-color);
+  background: none;
 }
 
 .chat-messages {
@@ -79,8 +119,14 @@
 .message {
     display: flex;
     gap: 12px;
-    max-width: 85%;
+    max-width: 80%;
+    margin-bottom: 8px;
+    transition: transform 0.2s ease;
     animation: message-appear 0.3s ease-out;
+}
+
+.message:hover {
+  transform: translateY(-2px);
 }
 
 .message.user {
@@ -95,6 +141,7 @@
     background-color: var(--primary-color);
     color: white;
     display: flex;
+    align-self: flex-start;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
@@ -104,20 +151,40 @@
     background-color: var(--primary-dark);
 }
 
+.bot-avatar, .user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.bot-avatar {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, #34495e, #2c3e50);
+  color: white;
+}
+
 .message-content {
     background-color: #f0f2f5;
     padding: 12px 16px;
     border-radius: 18px;
     border-top-left-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     max-width: calc(100% - 50px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .message.user .message-content {
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 18px;
-    border-top-right-radius: 4px;
+  border-top-right-radius: 2px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
 }
 
 .message.error .message-content {
@@ -189,15 +256,6 @@
     padding: 8px 12px;
     flex: 1;
     min-width: 80px;
-}
-
-.chat-input {
-    padding: 16px 20px;
-    display: flex;
-    gap: 12px;
-    background-color: white;
-    border-top: 1px solid var(--secondary-color);
-    z-index: 10;
 }
 
 .chat-input input {
@@ -310,30 +368,57 @@
     }
   }
 
-.suggestions-container {
-    padding: 16px 8px;
+  .suggestions-container {
+    padding: 8px 16px;
+    display: flex;
+    gap: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    align-items: center;
+}
+
+.suggestions-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.suggestions-scroll {
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    background-color: white;
+    padding: 2px 0;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.suggestions-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.suggestions-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 4px;
 }
 
 .suggestion-pill {
-    background-color: rgba(52, 152, 219, 0.1);
     color: var(--primary-color);
-    border: 1px solid rgba(52, 152, 219, 0.2);
-    border-radius: 16px;
-    padding: 6px 12px;
-    font-size: 0.85rem;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
     white-space: nowrap;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .suggestion-pill:hover {
-    background-color: rgba(52, 152, 219, 0.2);
-    border-color: var(--primary-color);
-    transform: translateY(-2px);
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .analyzing-container {
@@ -639,19 +724,6 @@
   line-height: 1.5;
 }
 
-.clear-history-button {
-    margin-left: auto;
-    border: none;
-    cursor: pointer;
-    color: var(--text-secondary);
-    padding: 0.5rem;
-  }
-  
-  .clear-history-button:hover {
-    color: var(--error-color);
-    background: none;
-  }
-
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .message-text ul li::before {
@@ -778,4 +850,150 @@
     .message {
         max-width: 95%;
     }
+}
+
+/* Input Area Improvements */
+.chat-input {
+  padding: 16px 24px;
+  background-color: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-radius: 24px;
+  padding: 4px 6px 4px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.input-container:focus-within {
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.15);
+  background-color: white;
+}
+
+.message-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 0;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.send-button {
+  margin-left: 8px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.send-button:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark Mode Improvements */
+@media (prefers-color-scheme: dark) {
+  .chat-header {
+      background: linear-gradient(to right, var(--primary-dark), #1a5276);
+  }
+  
+  .message.bot .message-content {
+      background-color: #2a2a2a;
+  }
+  
+  .suggestions-container {
+      background-color: #1a1a1a;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .suggestion-pill {
+      background-color: #2a2a2a;
+      border-color: rgba(52, 152, 219, 0.2);
+  }
+  
+  .input-container {
+      background-color: #2a2a2a;
+  }
+  
+  .input-container:focus-within {
+      background-color: #333;
+  }
+  
+  .message-input {
+      color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .chat-input {
+      background-color: #1a1a1a;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+  .chat-header {
+      padding: 12px 16px;
+  }
+  
+  .header-title {
+      font-size: 1.2rem;
+  }
+  
+  .bot-subtitle {
+      font-size: 0.75rem;
+  }
+  
+  .message {
+      max-width: 90%;
+  }
+  
+  .suggestions-container {
+      padding: 12px 16px;
+  }
+  
+  .chat-input {
+      padding: 12px 16px;
+  }
+}
+
+/* Tables and Data Visualization */
+.markdown-table {
+  margin: 16px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.markdown-table .header-row {
+  background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+}
+
+.markdown-table th {
+  padding: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.markdown-table td {
+  padding: 12px 14px;
+}
+
+.markdown-table tr:hover:not(.header-row) {
+  background-color: rgba(52, 152, 219, 0.05);
 }
