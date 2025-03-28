@@ -22,7 +22,7 @@ const useFileUpload = () => {
             }, 500);
 
             // Upload file
-            const response = await api.upload(file);
+            const response = await api.api.upload(file);
             
             // Complete progress
             clearInterval(progressInterval);
