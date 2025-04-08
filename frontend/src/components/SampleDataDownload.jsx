@@ -4,7 +4,7 @@ import '../styles/SampleDataDownload.css';
 
 const SampleDataDownload = () => {
   // Sample CSV file URL
-  const sampleCsvUrl = "https://data-analyst-ai-agent.s3.us-east-1.amazonaws.com/FanBudget.csv";
+  const sampleCsvUrl = "https://data-analyst-ai-agent.s3.us-east-1.amazonaws.com/Mock-Sales-Data.csv";
 
   return (
     <div className="sample-data-container">
