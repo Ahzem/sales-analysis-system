@@ -162,17 +162,6 @@ def format_analysis_response(response_text):
     """Enhance and format the analysis response for better presentation"""
     import re
     
-    # Ensure all currency values have dollar signs
-    def add_dollar_sign(match):
-        value = match.group(1)
-        # Only add $ if it doesn't already have one
-        if not value.strip().startswith('$'):
-            return f"${value}"
-        return value
-    
-    # Add dollar signs to currency values (matches numbers with decimal points not preceded by $)
-    # response_text = re.sub(r'(\d{1,3}(?:,\d{3})*\.\d{2})', add_dollar_sign, response_text)
-    
     # Format percentages consistently (ensure % symbol is attached)
     response_text = re.sub(r'(\d+\.?\d*)\s+%', r'\1%', response_text)
     
